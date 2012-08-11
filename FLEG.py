@@ -18,6 +18,12 @@ import os
 homepath = os.path.expanduser('~')
 
 globalpath = homepath+'/.FLEG' # <--- Write here the global path to the destination of this pythonscript
+
+# Lists for SyntaxHigh
+numbers = ["0","1","2","3","4","5","6","7","8","9"]
+key_dat = open(globalpath+"/latex.fleg", "r")
+key_dat_lines = key_dat.readlines()
+keywords = [kl[:-1] for kl in key_dat_lines]
  
 class PDFWindow(wx.ScrolledWindow):
     """ This example class implements a PDF Viewer Window, handling Zoom and Scrolling """
@@ -174,7 +180,7 @@ class SettingsDialog(wx.Dialog):
         headerfile = open(globalpath+'/header.fleg', 'a+')
         self.header_tc.SetValue(headerfile.read())
         headerfile.close()
-		
+        
     def SaveHeader(self):
         headerfile = open(globalpath+'/header.fleg', 'w')
         headerfile.write(self.header_tc.GetValue())
@@ -218,6 +224,7 @@ class FLEG(wx.Frame):
 
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         self.tc2 = wx.TextCtrl(panel, style=wx.TE_MULTILINE)
+        self.tc2.Bind(wx.EVT_TEXT, self.SyntaxHigh)
         hbox2.Add(self.tc2, proportion=1, flag=wx.EXPAND)
         vbox.Add(hbox2, proportion=1, flag=wx.LEFT|wx.RIGHT|wx.EXPAND, border=10)
 
@@ -250,6 +257,42 @@ class FLEG(wx.Frame):
         vbox.Add((-1, 10))
 
         panel.SetSizer(vbox)
+        
+        
+    def SyntaxHigh(self, event):
+        
+        # Define Attributes
+        attr_number = wx.TextAttr(wx.Colour(0,150,0))
+        attr_keywords = wx.TextAttr(wx.Colour(0,0,150))
+        attr_slashwords = wx.TextAttr(wx.Colour(150,150,250))
+
+        # Get Code from TextCtrl
+        code = self.tc2.GetValue()
+        
+        # Find all Numbers
+        for fs in numbers:
+            pos = 0
+            start = 0
+            while (pos >= 0):
+                pos = code.find(fs, start)
+                start = pos+1
+                self.tc2.SetStyle(pos, pos+1, attr_number)
+                
+        # Find all Slash-/ and Keywords
+        pos = 0
+        start = 0
+        while (pos >= 0):
+            pos = code.find('\\', start)
+            if (pos < 0): continue
+            end = len(code)
+            for endchar in [' ', '{', '}', '\\']:
+                posend = code.find(endchar, pos+1)
+                if (posend < end and posend > 0): end = posend
+            self.tc2.SetStyle(pos, end, attr_slashwords)
+            if (code[pos:end] in keywords):
+                self.tc2.SetStyle(pos, end, attr_keywords)
+            pos = end
+            start = end
 
 
     def SliderUpdate(self, event):
