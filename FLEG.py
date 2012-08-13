@@ -262,9 +262,9 @@ class FLEG(wx.Frame):
     def SyntaxHigh(self, event):
         
         # Define Attributes
-        attr_number = wx.TextAttr(wx.Colour(0,150,0))
-        attr_keywords = wx.TextAttr(wx.Colour(0,0,150))
-        attr_slashwords = wx.TextAttr(wx.Colour(150,150,250))
+        attr_number = wx.TextAttr(wx.Colour(100,100,100))
+        attr_keywords = wx.TextAttr(wx.Colour(0,128,128))
+        attr_slashwords = wx.TextAttr(wx.Colour(210,86,0))
 
         # Get Code from TextCtrl
         code = self.tc2.GetValue()
@@ -285,7 +285,7 @@ class FLEG(wx.Frame):
             pos = code.find('\\', start)
             if (pos < 0): continue
             end = len(code)
-            for endchar in [' ', '{', '}', '\\']:
+            for endchar in [' ', '{', '}', '\\', '_', '^']:
                 posend = code.find(endchar, pos+1)
                 if (posend < end and posend > 0): end = posend
             self.tc2.SetStyle(pos, end, attr_slashwords)
