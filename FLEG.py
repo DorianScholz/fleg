@@ -24,6 +24,7 @@ numbers = ["0","1","2","3","4","5","6","7","8","9"]
 key_dat = open(globalpath+"/latex.fleg", "r")
 key_dat_lines = key_dat.readlines()
 keywords = [kl[:-1] for kl in key_dat_lines]
+
  
 class PDFWindow(wx.ScrolledWindow):
     """ This example class implements a PDF Viewer Window, handling Zoom and Scrolling """
@@ -198,6 +199,8 @@ class FLEG(wx.Frame):
         self.Show()
         self.LoadHistory()
 
+        self.formula_color = (0,0,0)
+
     def GUI(self):
 
         panel = wx.Panel(self)
@@ -243,11 +246,20 @@ class FLEG(wx.Frame):
         img_settings = wx.Image(globalpath+"/set.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
         self.btn_settings = wx.BitmapButton(panel, id=-1, bitmap=img_settings, pos=(100, 0), size = (30, 30))
         self.btn_settings.Bind(wx.EVT_BUTTON, self.ShowSettings)
+        self.btn_settings.SetToolTip(wx.ToolTip("Settings"))
         hbox3.Add(self.btn_settings)
 
         self.combobox = wx.ComboBox(panel, -1, "svg", (100, 0), (80,30), ["pdf","png","svg"], wx.CB_READONLY)
+        self.combobox.SetToolTip(wx.ToolTip("Change output format"))
         hbox3.Add(self.combobox)
-        hbox3.Add((130, -1))
+        
+        self.btn_color = wx.Button(panel, label="", size=(30,30))
+        self.btn_color.SetBackgroundColour(wx.Colour(0,0,0))
+        self.btn_color.SetToolTip(wx.ToolTip("Change color"))
+        self.btn_color.Bind(wx.EVT_BUTTON, self.ChangeColor)
+        hbox3.Add(self.btn_color)
+        
+        hbox3.Add((100, -1))
 
         btn1 = wx.Button(panel, label='Generate', size=(100, 30))
         hbox3.Add(btn1)
@@ -258,7 +270,18 @@ class FLEG(wx.Frame):
 
         panel.SetSizer(vbox)
         
-        
+    
+    def ChangeColor(self, event):
+        colordialog = wx.ColourDialog(None)
+        colordialog.GetColourData().SetChooseFull(True)
+        if colordialog.ShowModal() == wx.ID_OK:
+            data = colordialog.GetColourData()
+            col = data.GetColour().Get()
+            self.formula_color = col
+            self.btn_color.SetBackgroundColour(wx.Colour(col[0],col[1],col[2]))
+        colordialog.Destroy()
+		
+		    
     def SyntaxHigh(self, event):
         
         # Define Attributes
@@ -337,10 +360,14 @@ class FLEG(wx.Frame):
         tempfile = open(globalpath+"/temp.tex",'w')
         tempfile.write(r"""\documentclass{article}
 """ + headerfile.read() + r"""
+\usepackage{color}
+\definecolor{col}{RGB}{"""+str(self.formula_color[0])+","+str(self.formula_color[1])+","+str(self.formula_color[2])+r"""}
 \begin{document}
 \pagestyle{empty}
   \[
+  \textcolor{col}{
     """ + self.formula + r"""
+  }
   \]
 \end{document}
 """)
